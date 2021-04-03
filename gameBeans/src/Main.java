@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import gameBeans.GameBeans;
@@ -21,7 +21,8 @@ public class Main {
 			int depth = Integer.parseInt(p_d[1]);
 
 			String[] pilesS = in.readLine().split(" "); // piles in String
-			List<Integer> piles = new ArrayList<>(numberPiles); // Array of piles
+			
+			List<Integer> piles = new LinkedList<>(); // Array of piles
 
 			short currentPlayer = 0;
 			if(in.readLine().toUpperCase().equals(PIETON)) // get the startingPlayer

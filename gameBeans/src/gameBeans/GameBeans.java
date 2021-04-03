@@ -1,5 +1,6 @@
 package gameBeans;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameBeans {
@@ -11,8 +12,8 @@ public class GameBeans {
 
 	public GameBeans(int depth, List<Integer> piles, int pilesLength, short currentPlayer) {
 		this.depth = depth;
-		this.piles = piles;
 		this.currentPlayer = currentPlayer;
+		listToArray(piles, pilesLength);
 
 		result = 0;
 		pilesLeft = pilesLength;
@@ -20,10 +21,13 @@ public class GameBeans {
 
 	public void play() {
 		while (pilesLeft > 0) {
-			if (currentPlayer == 0)
+			if (currentPlayer == 0) {
 				jabaPlays();
-			else
+				currentPlayer = 1;
+			} else {
 				pietonPlays();
+				currentPlayer = 0;
+			}
 		}
 	}
 
@@ -49,12 +53,15 @@ public class GameBeans {
 		int length = 1; // amount of piles to remove
 		int lastIndex = piles.size() - 1;
 
+		// Base case
 		if (depth == 1) {
 			if (max > piles.get(lastIndex)) // compares first with last element
-				piles.remove(0);
+				removePiles(true, 1);
 			else
-				piles.remove(lastIndex);
+				removePiles(false, 1);
+			return;
 		}
+
 		// from first
 		int lastSum = piles.get(0); // starts has first element
 		int current = piles.get(1); // starts has second element
@@ -64,32 +71,23 @@ public class GameBeans {
 			max = sum;
 			length = 2;
 		}
+
 		// from last
 		int lastSumL = piles.get(lastIndex); // starts has last element
 		int currentL = piles.get(lastIndex - 1); // starts has penultimate element
 		int sumL = lastSumL + currentL;
-
-		if (lastSumL > max) { // check last
-			max = lastSumL;
-			length = 1;
-			isFromStart = false;
-		}
-		if (sumL > max) { // check last with penultimate
-			max = sumL;
-			length = 2;
-			isFromStart = false;
-		}
 
 		for (int i = 2; i < depth; i++) {
 			// from first
 			lastSum = sum;
 			current = piles.get(i);
 			sum = lastSum + current;
-			if (sum > max) {
+			if (sum > max || (sum == max && !isFromStart)) {
 				max = sum;
 				length = i + 1;
 				isFromStart = true;
 			}
+
 			// from last
 			lastSumL = sumL;
 			currentL = piles.get(lastIndex - i);
@@ -100,9 +98,32 @@ public class GameBeans {
 				isFromStart = false;
 			}
 		}
+		
+		// from last
+		lastSumL = piles.get(lastIndex); // starts has last element
+		currentL = piles.get(lastIndex - 1); // starts has penultimate element
+		sumL = lastSumL + currentL;
+
+		if (lastSumL > max || (sum == max && !isFromStart)) { // check last
+			max = lastSumL;
+			length = 1;
+			isFromStart = false;
+		}
+		if (sumL > max || (sum == max && !isFromStart && length != 1)) { // check last with penultimate
+			max = sumL;
+			length = 2;
+			isFromStart = false;
+		}
+
 		removePiles(isFromStart, length);
 	}
 
+	/**
+	 * Removes one or more elements from the pile
+	 * 
+	 * @param isFromStart
+	 * @param length
+	 */
 	private void removePiles(boolean isFromStart, int length) {
 
 		for (int i = 0; i < length; i++) {
@@ -110,7 +131,19 @@ public class GameBeans {
 				piles.remove(0);
 			else
 				piles.remove(piles.size() - 1);
+
+			pilesLeft--;
 		}
+	}
+
+	/**
+	 * Transform the list received in constructor to an ArrayList
+	 * 
+	 * @param list
+	 * @param pilesLength
+	 */
+	private void listToArray(List<Integer> list, int pilesLength) {
+		piles = new ArrayList<>(list);
 	}
 
 }
