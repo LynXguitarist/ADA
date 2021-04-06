@@ -38,7 +38,9 @@ public class GameBeans {
 	// ----------------------------------Private_Methods--------------------------------//
 
 	private void jabaPlays() {
-
+		// for n in tam && existsBeans
+			// corre n escolha
+			// corre pieton func
 	}
 
 	// Options:
