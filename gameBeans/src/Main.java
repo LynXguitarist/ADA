@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import gameBeans.GameBeans;
+import gameBeans.Pair;
 
 public class Main {
 
@@ -22,7 +23,7 @@ public class Main {
 
 			String[] pilesS = in.readLine().split(" "); // piles in String
 			
-			List<Integer> piles = new LinkedList<>(); // Array of piles
+			List<Pair<Integer,Integer>> piles = new LinkedList<>(); // Array of piles
 
 			short currentPlayer = 0;
 			if(in.readLine().toUpperCase().equals(PIETON)) // get the startingPlayer
@@ -30,7 +31,7 @@ public class Main {
 			
 			// Piles -> String to integer
 			for (int j = 0; j < numberPiles; j++) {
-				piles.add(Integer.parseInt(pilesS[j]));
+				piles.add(new Pair<>(j, Integer.parseInt(pilesS[j])));
 			}
 			
 			GameBeans game = new GameBeans(depth, piles, numberPiles, currentPlayer);

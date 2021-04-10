@@ -1,33 +1,39 @@
 package gameBeans;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 
 public class GameBeans {
 
-	private List<Integer> piles; // List of piles
+	private List<Pair<Integer, Integer>> piles; // List of piles
+	private List<Pair<Integer, Integer>>[] pilesInPos;
 
-	private int depth, result, pilesLeft; // result = Jaba's points
+	private int[][] pyramid;
+
+	private int depth, result; // result = Jaba's points
 	private short currentPlayer; // 0-> Jaba, 1-> Pieton
 
-	public GameBeans(int depth, List<Integer> piles, int pilesLength, short currentPlayer) {
+	public GameBeans(int depth, List<Pair<Integer, Integer>> piles, int pilesLength, short currentPlayer) {
 		this.depth = depth;
 		this.currentPlayer = currentPlayer;
 		listToArray(piles, pilesLength);
 
+		createDataStructure(pilesLength * depth * 2);
+
+		pyramid = new int[pilesLength][pilesLength * depth];
+
 		result = 0;
-		pilesLeft = pilesLength;
 	}
 
 	public void play() {
-		while (pilesLeft > 0) {
-			if (currentPlayer == 0) {
-				jabaPlays();
-				currentPlayer = 1;
-			} else {
-				pietonPlays();
-				currentPlayer = 0;
-			}
+		if (currentPlayer == 0) {
+			pilesInPos[0] = piles; // init list
+			jabaPlays();
+		} else {
+			pietonPlays(0, piles);
 		}
 	}
 
@@ -38,9 +44,14 @@ public class GameBeans {
 	// ----------------------------------Private_Methods--------------------------------//
 
 	private void jabaPlays() {
-		// for n in tam && existsBeans
-			// corre n escolha
-			// corre pieton func
+		// Base case
+		
+		for(int i = 1; i <= depth + 1; i++) {
+			for(int j = i-1; j <= depth; j++) {
+				
+			}
+		}
+
 	}
 
 	// Options:
@@ -48,25 +59,25 @@ public class GameBeans {
 	// - First element + depth options(0 -> 0 + depth)
 	// - Last element
 	// - Last element + depth options(last -> last - depth)
-	private void pietonPlays() {
+	private void pietonPlays(int pos, List<Pair<Integer, Integer>> pilesAux) {
 		boolean isFromStart = true;
 
-		int max = piles.get(0); // first element
+		int max = piles.get(0).getValue(); // first element
 		int length = 1; // amount of piles to remove
 		int lastIndex = piles.size() - 1;
 
 		// Base case
 		if (depth == 1) {
-			if (max > piles.get(lastIndex)) // compares first with last element
-				removePiles(true, 1);
+			if (max > piles.get(lastIndex).getValue()) // compares first with last element
+				removePilesAux(pilesAux, pos, true, 1);
 			else
-				removePiles(false, 1);
+				removePilesAux(pilesAux, pos, false, 1);
 			return;
 		}
 
 		// from first
-		int lastSum = piles.get(0); // starts has first element
-		int current = piles.get(1); // starts has second element
+		int lastSum = 0;
+		int current = piles.get(0).getValue(); // starts has second element
 		int sum = lastSum + current;
 
 		if (sum > max) { // check first with second
@@ -75,14 +86,14 @@ public class GameBeans {
 		}
 
 		// from last
-		int lastSumL = piles.get(lastIndex); // starts has last element
-		int currentL = piles.get(lastIndex - 1); // starts has penultimate element
+		int lastSumL = 0;
+		int currentL = piles.get(lastIndex).getValue(); // starts has penultimate element
 		int sumL = lastSumL + currentL;
 
-		for (int i = 2; i < depth; i++) {
+		for (int i = 1; i < depth || i < pilesAux.size(); i++) {
 			// from first
 			lastSum = sum;
-			current = piles.get(i);
+			current = piles.get(i).getValue();
 			sum = lastSum + current;
 			if (sum > max || (sum == max && !isFromStart)) {
 				max = sum;
@@ -92,7 +103,7 @@ public class GameBeans {
 
 			// from last
 			lastSumL = sumL;
-			currentL = piles.get(lastIndex - i);
+			currentL = piles.get(lastIndex - i).getValue();
 			sumL = lastSumL + currentL;
 			if (sumL > max) {
 				max = sumL;
@@ -100,14 +111,14 @@ public class GameBeans {
 				isFromStart = false;
 			}
 		}
-		
+
 		// from last
-		lastSumL = piles.get(lastIndex); // starts has last element
-		currentL = piles.get(lastIndex - 1); // starts has penultimate element
+		lastSumL = 0;
+		currentL = piles.get(lastIndex).getValue(); // starts has penultimate element
 		sumL = lastSumL + currentL;
 
-		if (lastSumL > max || (sum == max && !isFromStart)) { // check last
-			max = lastSumL;
+		if (currentL > max || (sum == max && !isFromStart)) { // check last
+			max = currentL;
 			length = 1;
 			isFromStart = false;
 		}
@@ -117,7 +128,28 @@ public class GameBeans {
 			isFromStart = false;
 		}
 
-		removePiles(isFromStart, length);
+		if (pos == 0)
+			removePiles(isFromStart, length);
+		else
+			removePilesAux(pilesAux, pos, isFromStart, length);
+	}
+
+	// --------------------------RemovePiles-------------------------------//
+
+	/**
+	 * Removes one or more elements from the pileAux
+	 * 
+	 * @param isFromStart
+	 * @param length
+	 */
+	private void removePilesAux(List<Pair<Integer, Integer>> pilesAux, int pos, boolean isFromStart, int length) {
+		for (int i = 0; i < length; i++) {
+			if (isFromStart)
+				pilesAux.remove(0);
+			else
+				pilesAux.remove(piles.size() - 1);
+		}
+		pilesInPos[pos] = pilesAux;
 	}
 
 	/**
@@ -127,16 +159,16 @@ public class GameBeans {
 	 * @param length
 	 */
 	private void removePiles(boolean isFromStart, int length) {
-
 		for (int i = 0; i < length; i++) {
 			if (isFromStart)
 				piles.remove(0);
 			else
 				piles.remove(piles.size() - 1);
-
-			pilesLeft--;
 		}
+		pilesInPos[0] = piles;
 	}
+
+	// -----------------------------------DataStructs--------------------------------//
 
 	/**
 	 * Transform the list received in constructor to an ArrayList
@@ -144,8 +176,15 @@ public class GameBeans {
 	 * @param list
 	 * @param pilesLength
 	 */
-	private void listToArray(List<Integer> list, int pilesLength) {
+	private void listToArray(List<Pair<Integer, Integer>> list, int pilesLength) {
 		piles = new ArrayList<>(list);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void createDataStructure(int vecLength) {
+		pilesInPos = new List[vecLength];
+		for (int i = 0; i < pilesInPos.length; i++)
+			pilesInPos[i] = new LinkedList<>();
 	}
 
 }
