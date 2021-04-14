@@ -19,10 +19,10 @@ public class GameBeans {
 	public GameBeans(int depth, List<Integer> piles, int pilesLength, short currentPlayer) {
 		this.pilesLength = pilesLength;
 		this.depth = depth;
-		
+
 		if (depth > 10)
 			depth = Math.min(10, pilesLength);
-		
+
 		this.currentPlayer = currentPlayer;
 
 		listToArray(piles, pilesLength);
@@ -31,14 +31,20 @@ public class GameBeans {
 		pyramidPieton = new int[pilesLength + 1][pilesLength + 1];
 	}
 
+	/**
+	 * Processes all the plays. Fills the pyramids -> matrixes
+	 */
 	public void play() {
 		for (int j = 0; j <= pilesLength; j++) {
 			for (int i = 1; i <= pilesLength + 1 - j; i++) {
-				S(i, j + i - 1, currentPlayer);
+				S(i, j + i - 1);
 			}
 		}
 	}
 
+	/**
+	 * @return Jaba's points
+	 */
 	public int getResult() {
 		if (currentPlayer == JABA)
 			return pyramidJaba[0][pilesLength];
@@ -48,11 +54,13 @@ public class GameBeans {
 
 	// ----------------------------------Private_Methods--------------------------------//
 
-	private void S(int i, int j, short p) {
-		jabaPlays(i, j);
-	}
-
-	private void jabaPlays(int i, int j) {
+	/**
+	 * Processes Jaba's plays, with a sub sequence from i to j
+	 * 
+	 * @param i
+	 * @param j
+	 */
+	private void S(int i, int j) {
 		int posI = i - 1;
 
 		// Base case
@@ -102,6 +110,13 @@ public class GameBeans {
 		pietonPlays(i, j);
 	}
 
+	/**
+	 * Simulates a play from Pieton. Greedy play -> max values, prior from left and
+	 * the less removed piles
+	 * 
+	 * @param i
+	 * @param j
+	 */
 	private void pietonPlays(int i, int j) {
 		boolean isFromStart = true;
 		int posI = i - 1;
@@ -163,11 +178,10 @@ public class GameBeans {
 			isFromStart = false;
 		}
 
-		if (isFromStart) {
+		if (isFromStart)
 			pyramidPieton[posI][j] = pyramidJaba[posI + length][j];
-		} else {
+		else
 			pyramidPieton[posI][j] = pyramidJaba[posI][j - length];
-		}
 	}
 
 	// ------------------------------------DataStructs----------------------------------//
