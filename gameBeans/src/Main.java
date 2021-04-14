@@ -9,7 +9,7 @@ import gameBeans.Pair;
 
 public class Main {
 
-	private static final String PIETON = "Pieton";
+	private static final String PIETON = "PIETON";
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -23,15 +23,16 @@ public class Main {
 
 			String[] pilesS = in.readLine().split(" "); // piles in String
 			
-			List<Pair<Integer,Integer>> piles = new LinkedList<>(); // Array of piles
+			List<Integer> piles = new LinkedList<>(); // Array of piles
 
 			short currentPlayer = 0;
-			if(in.readLine().toUpperCase().equals(PIETON)) // get the startingPlayer
+			String startingPlayer = in.readLine();
+			if(startingPlayer.toUpperCase().equals(PIETON)) // get the startingPlayer
 				currentPlayer = 1;
 			
 			// Piles -> String to integer
 			for (int j = 0; j < numberPiles; j++) {
-				piles.add(new Pair<>(j, Integer.parseInt(pilesS[j])));
+				piles.add(Integer.parseInt(pilesS[j]));
 			}
 			
 			GameBeans game = new GameBeans(depth, piles, numberPiles, currentPlayer);

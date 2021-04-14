@@ -1,83 +1,125 @@
 package gameBeans;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 
 public class GameBeans {
 
-	private List<Pair<Integer, Integer>> piles; // List of piles
-	private List<Pair<Integer, Integer>>[] pilesInPos;
+	private static final short JABA = 0;
+	private static final int SMALLEST = -100;
 
-	private int[][] pyramid;
+	private List<Integer> piles; // Array of piles
 
-	private int depth, result; // result = Jaba's points
+	private int[][] pyramidJaba; // Jaba's points if Jaba is playing
+	private int[][] pyramidPieton; // Jaba's points if Pieton is playing
+
+	private int pilesLength, depth; // result = Jaba's points
 	private short currentPlayer; // 0-> Jaba, 1-> Pieton
 
-	public GameBeans(int depth, List<Pair<Integer, Integer>> piles, int pilesLength, short currentPlayer) {
+	public GameBeans(int depth, List<Integer> piles, int pilesLength, short currentPlayer) {
+		this.pilesLength = pilesLength;
 		this.depth = depth;
 		this.currentPlayer = currentPlayer;
+
 		listToArray(piles, pilesLength);
 
-		createDataStructure(pilesLength * depth * 2);
-
-		pyramid = new int[pilesLength][pilesLength * depth];
-
-		result = 0;
+		pyramidJaba = new int[pilesLength + 1][pilesLength + 1];
+		pyramidPieton = new int[pilesLength + 1][pilesLength + 1];
 	}
 
 	public void play() {
-		if (currentPlayer == 0) {
-			pilesInPos[0] = piles; // init list
-			jabaPlays();
-		} else {
-			pietonPlays(0, piles);
+		for (int j = 0; j <= pilesLength; j++) {
+			for (int i = 1; i <= pilesLength + 1 - j; i++) {
+				S(i, j + i - 1, currentPlayer);
+			}
 		}
 	}
 
 	public int getResult() {
-		return result;
+		if (currentPlayer == JABA)
+			return pyramidJaba[0][pilesLength];
+		else
+			return pyramidPieton[0][pilesLength];
 	}
 
 	// ----------------------------------Private_Methods--------------------------------//
 
-	private void jabaPlays() {
-		// Base case
-		
-		for(int i = 1; i <= depth + 1; i++) {
-			for(int j = i-1; j <= depth; j++) {
-				
-			}
-		}
-
+	private void S(int i, int j, short p) {
+		// if (p == JABA)
+		jabaPlays(i, j);
+		/*
+		 * else pietonPlays(i, j);
+		 */
 	}
 
-	// Options:
-	// - First element
-	// - First element + depth options(0 -> 0 + depth)
-	// - Last element
-	// - Last element + depth options(last -> last - depth)
-	private void pietonPlays(int pos, List<Pair<Integer, Integer>> pilesAux) {
+	private void jabaPlays(int i, int j) {
+		int posI = i - 1;
+
+		// Base case
+		if (j < i) {
+			pyramidJaba[posI][j] = 0;
+			pyramidPieton[posI][j] = 0;
+			return;
+		} else if (j == i) {
+			pyramidJaba[posI][j] = piles.get(posI);
+			pyramidPieton[posI][j] = 0;
+			return;
+		} else if (j == i + 1 && depth == 1) {
+			pyramidJaba[posI][j] = Math.max(piles.get(posI), piles.get(j - 1));
+			pyramidPieton[posI][j] = Math.min(piles.get(posI), piles.get(j - 1));
+			return;
+		}
+
+		// General case
+		int limit = Math.min(depth, j - i);
+		int maxSum = SMALLEST;
+
+		// from left
+		int current = 0;
+		int last = 0;
+
+		// from right
+		int currentRight = 0;
+		int lastRight = 0;
+
+		for (int k = 0; k < limit; k++) {
+			// from left
+			current = last + piles.get(posI + k);
+			last = current;
+			int leftChoice = current + pyramidPieton[posI + k + 1][j];
+
+			maxSum = Math.max(leftChoice, maxSum);
+
+			// from right
+			currentRight = lastRight + piles.get(j - 1 - k);
+			lastRight = currentRight;
+			int rightChoice = currentRight + pyramidPieton[posI][j - k - 1];
+
+			maxSum = Math.max(rightChoice, maxSum);
+		}
+		pyramidJaba[posI][j] = maxSum;
+		// saves Jaba's points if Pieton was first playing
+		pietonPlays(i, j);
+	}
+
+	private void pietonPlays(int i, int j) {
 		boolean isFromStart = true;
 
-		int max = piles.get(0).getValue(); // first element
+		int max = piles.get(i); // first element
 		int length = 1; // amount of piles to remove
-		int lastIndex = piles.size() - 1;
 
 		// Base case
 		if (depth == 1) {
-			if (max > piles.get(lastIndex).getValue()) // compares first with last element
-				removePilesAux(pilesAux, pos, true, 1);
+			if (max > piles.get(j)) // compares first with last element
+				pyramidPieton[i][j] = pyramidJaba[i + 1][j];
 			else
-				removePilesAux(pilesAux, pos, false, 1);
+				pyramidPieton[i][j] = pyramidJaba[i][j - 1];
 			return;
 		}
 
 		// from first
 		int lastSum = 0;
-		int current = piles.get(0).getValue(); // starts has second element
+		int current = piles.get(i); // starts has second element
 		int sum = lastSum + current;
 
 		if (sum > max) { // check first with second
@@ -87,34 +129,36 @@ public class GameBeans {
 
 		// from last
 		int lastSumL = 0;
-		int currentL = piles.get(lastIndex).getValue(); // starts has penultimate element
+		int currentL = piles.get(j); // starts has penultimate element
 		int sumL = lastSumL + currentL;
 
-		for (int i = 1; i < depth || i < pilesAux.size(); i++) {
+		int limit = Math.min(depth, j - i);
+
+		for (int k = 1; k < limit; k++) {
 			// from first
 			lastSum = sum;
-			current = piles.get(i).getValue();
+			current = piles.get(k + i);
 			sum = lastSum + current;
 			if (sum > max || (sum == max && !isFromStart)) {
 				max = sum;
-				length = i + 1;
+				length = k + 1;
 				isFromStart = true;
 			}
 
 			// from last
 			lastSumL = sumL;
-			currentL = piles.get(lastIndex - i).getValue();
+			currentL = piles.get(j - k);
 			sumL = lastSumL + currentL;
 			if (sumL > max) {
 				max = sumL;
-				length = i + 1;
+				length = k + 1;
 				isFromStart = false;
 			}
 		}
 
 		// from last
 		lastSumL = 0;
-		currentL = piles.get(lastIndex).getValue(); // starts has penultimate element
+		currentL = piles.get(j); // starts has penultimate element
 		sumL = lastSumL + currentL;
 
 		if (currentL > max || (sum == max && !isFromStart)) { // check last
@@ -128,47 +172,14 @@ public class GameBeans {
 			isFromStart = false;
 		}
 
-		if (pos == 0)
-			removePiles(isFromStart, length);
-		else
-			removePilesAux(pilesAux, pos, isFromStart, length);
-	}
-
-	// --------------------------RemovePiles-------------------------------//
-
-	/**
-	 * Removes one or more elements from the pileAux
-	 * 
-	 * @param isFromStart
-	 * @param length
-	 */
-	private void removePilesAux(List<Pair<Integer, Integer>> pilesAux, int pos, boolean isFromStart, int length) {
-		for (int i = 0; i < length; i++) {
-			if (isFromStart)
-				pilesAux.remove(0);
-			else
-				pilesAux.remove(piles.size() - 1);
+		if (isFromStart) {
+			pyramidPieton[i][j] = pyramidJaba[i + length][j];
+		} else {
+			pyramidPieton[i][j] = pyramidJaba[i][j - length];
 		}
-		pilesInPos[pos] = pilesAux;
 	}
 
-	/**
-	 * Removes one or more elements from the pile
-	 * 
-	 * @param isFromStart
-	 * @param length
-	 */
-	private void removePiles(boolean isFromStart, int length) {
-		for (int i = 0; i < length; i++) {
-			if (isFromStart)
-				piles.remove(0);
-			else
-				piles.remove(piles.size() - 1);
-		}
-		pilesInPos[0] = piles;
-	}
-
-	// -----------------------------------DataStructs--------------------------------//
+	// ------------------------------------DataStructs----------------------------------//
 
 	/**
 	 * Transform the list received in constructor to an ArrayList
@@ -176,15 +187,8 @@ public class GameBeans {
 	 * @param list
 	 * @param pilesLength
 	 */
-	private void listToArray(List<Pair<Integer, Integer>> list, int pilesLength) {
+	private void listToArray(List<Integer> list, int pilesLength) {
 		piles = new ArrayList<>(list);
-	}
-
-	@SuppressWarnings("unchecked")
-	private void createDataStructure(int vecLength) {
-		pilesInPos = new List[vecLength];
-		for (int i = 0; i < pilesInPos.length; i++)
-			pilesInPos[i] = new LinkedList<>();
 	}
 
 }
