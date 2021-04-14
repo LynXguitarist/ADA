@@ -6,7 +6,7 @@ import java.util.List;
 public class GameBeans {
 
 	private static final short JABA = 0;
-	private static final int SMALLEST = -101;
+	private static final int SMALLEST = Integer.MIN_VALUE;
 
 	private List<Integer> piles; // Array of piles
 
@@ -19,8 +19,10 @@ public class GameBeans {
 	public GameBeans(int depth, List<Integer> piles, int pilesLength, short currentPlayer) {
 		this.pilesLength = pilesLength;
 		this.depth = depth;
+		
 		if (depth > 10)
 			depth = Math.min(10, pilesLength);
+		
 		this.currentPlayer = currentPlayer;
 
 		listToArray(piles, pilesLength);
@@ -47,11 +49,7 @@ public class GameBeans {
 	// ----------------------------------Private_Methods--------------------------------//
 
 	private void S(int i, int j, short p) {
-		// if (p == JABA)
 		jabaPlays(i, j);
-		/*
-		 * else pietonPlays(i, j);
-		 */
 	}
 
 	private void jabaPlays(int i, int j) {
@@ -160,7 +158,7 @@ public class GameBeans {
 		sumL = lastSumL + currentL;
 
 		if (sumL > max || (sumL == max && !isFromStart)) { // check last
-			max = currentL;
+			max = sumL;
 			length = 1;
 			isFromStart = false;
 		}
