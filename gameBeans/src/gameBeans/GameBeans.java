@@ -159,7 +159,7 @@ public class GameBeans {
 		currentL = piles.get(j - 1); // starts has penultimate element
 		sumL = lastSumL + currentL;
 
-		if (currentL > max || (sum == max && !isFromStart)) { // check last
+		if (sumL > max || (sumL == max && !isFromStart)) { // check last
 			max = currentL;
 			length = 1;
 			isFromStart = false;
