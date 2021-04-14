@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import gameBeans.GameBeans;
-import gameBeans.Pair;
 
 public class Main {
 
