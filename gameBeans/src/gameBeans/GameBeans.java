@@ -6,7 +6,7 @@ import java.util.List;
 public class GameBeans {
 
 	private static final short JABA = 0;
-	private static final int SMALLEST = -100;
+	private static final int SMALLEST = -101;
 
 	private List<Integer> piles; // Array of piles
 
