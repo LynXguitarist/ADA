@@ -18,7 +18,9 @@ public class GameBeans {
 
 	public GameBeans(int depth, List<Integer> piles, int pilesLength, short currentPlayer) {
 		this.pilesLength = pilesLength;
-		this.depth = Math.min(depth, pilesLength);
+		this.depth = depth;
+		if (depth > 0)
+			depth = Math.min(10, pilesLength);
 		this.currentPlayer = currentPlayer;
 
 		listToArray(piles, pilesLength);
