@@ -71,7 +71,7 @@ public class GameBeans {
 		}
 
 		// General case
-		int limit = Math.min(depth, j - i);
+		int limit = Math.min(depth, j - i + 1);
 		int maxSum = SMALLEST;
 
 		// from left
@@ -133,7 +133,7 @@ public class GameBeans {
 		int currentL = piles.get(j - 1); // starts has penultimate element
 		int sumL = lastSumL + currentL;
 
-		int limit = Math.min(depth, j - i);
+		int limit = Math.min(depth, j - i + 1);
 
 		for (int k = 1; k < limit; k++) {
 			// from first
