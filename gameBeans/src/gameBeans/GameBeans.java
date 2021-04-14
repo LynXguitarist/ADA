@@ -104,22 +104,23 @@ public class GameBeans {
 
 	private void pietonPlays(int i, int j) {
 		boolean isFromStart = true;
+		int posI = i - 1;
 
-		int max = piles.get(i); // first element
+		int max = piles.get(posI); // first element
 		int length = 1; // amount of piles to remove
 
 		// Base case
 		if (depth == 1) {
-			if (max > piles.get(j)) // compares first with last element
-				pyramidPieton[i][j] = pyramidJaba[i + 1][j];
+			if (max > piles.get(j - 1)) // compares first with last element
+				pyramidPieton[posI][j] = pyramidJaba[posI + 1][j];
 			else
-				pyramidPieton[i][j] = pyramidJaba[i][j - 1];
+				pyramidPieton[posI][j] = pyramidJaba[posI][j - 1];
 			return;
 		}
 
 		// from first
 		int lastSum = 0;
-		int current = piles.get(i); // starts has second element
+		int current = piles.get(posI); // starts has second element
 		int sum = lastSum + current;
 
 		if (sum > max) { // check first with second
@@ -129,7 +130,7 @@ public class GameBeans {
 
 		// from last
 		int lastSumL = 0;
-		int currentL = piles.get(j); // starts has penultimate element
+		int currentL = piles.get(j - 1); // starts has penultimate element
 		int sumL = lastSumL + currentL;
 
 		int limit = Math.min(depth, j - i);
@@ -137,7 +138,7 @@ public class GameBeans {
 		for (int k = 1; k < limit; k++) {
 			// from first
 			lastSum = sum;
-			current = piles.get(k + i);
+			current = piles.get(k + posI);
 			sum = lastSum + current;
 			if (sum > max || (sum == max && !isFromStart)) {
 				max = sum;
@@ -147,7 +148,7 @@ public class GameBeans {
 
 			// from last
 			lastSumL = sumL;
-			currentL = piles.get(j - k);
+			currentL = piles.get(j - 1 - k);
 			sumL = lastSumL + currentL;
 			if (sumL > max) {
 				max = sumL;
@@ -158,7 +159,7 @@ public class GameBeans {
 
 		// from last
 		lastSumL = 0;
-		currentL = piles.get(j); // starts has penultimate element
+		currentL = piles.get(j - 1); // starts has penultimate element
 		sumL = lastSumL + currentL;
 
 		if (currentL > max || (sum == max && !isFromStart)) { // check last
@@ -173,9 +174,9 @@ public class GameBeans {
 		}
 
 		if (isFromStart) {
-			pyramidPieton[i][j] = pyramidJaba[i + length][j];
+			pyramidPieton[posI][j] = pyramidJaba[posI + length][j];
 		} else {
-			pyramidPieton[i][j] = pyramidJaba[i][j - length];
+			pyramidPieton[posI][j] = pyramidJaba[posI][j - length];
 		}
 	}
 
