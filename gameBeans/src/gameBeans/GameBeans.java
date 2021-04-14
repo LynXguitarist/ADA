@@ -113,7 +113,7 @@ public class GameBeans {
 
 		// Base case
 		if (depth == 1) {
-			if (max > piles.get(j - 1)) // compares first with last element
+			if (max >= piles.get(j - 1)) // compares first with last element
 				pyramidPieton[posI][j] = pyramidJaba[posI + 1][j];
 			else
 				pyramidPieton[posI][j] = pyramidJaba[posI][j - 1];
@@ -164,7 +164,6 @@ public class GameBeans {
 			length = 1;
 			isFromStart = false;
 		}
-		
 
 		if (isFromStart) {
 			pyramidPieton[posI][j] = pyramidJaba[posI + length][j];
