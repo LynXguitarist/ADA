@@ -125,11 +125,6 @@ public class GameBeans {
 		int current = piles.get(posI); // starts has second element
 		int sum = lastSum + current;
 
-		if (sum > max) { // check first with second
-			max = sum;
-			length = 2;
-		}
-
 		// from last
 		int lastSumL = 0;
 		int currentL = piles.get(j - 1); // starts has penultimate element
@@ -169,11 +164,7 @@ public class GameBeans {
 			length = 1;
 			isFromStart = false;
 		}
-		if (sumL > max || (sum == max && !isFromStart && length != 1)) { // check last with penultimate
-			max = sumL;
-			length = 2;
-			isFromStart = false;
-		}
+		
 
 		if (isFromStart) {
 			pyramidPieton[posI][j] = pyramidJaba[posI + length][j];
