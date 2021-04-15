@@ -119,6 +119,7 @@ public class GameBeans {
 	 */
 	private void pietonPlays(int i, int j) {
 		boolean isFromStart = true;
+		
 		int posI = i - 1;
 
 		int max = piles.get(posI); // first element

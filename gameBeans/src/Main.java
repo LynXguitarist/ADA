@@ -40,7 +40,6 @@ public class Main {
 			// Prints result
 			System.out.println(game.getResult());
 		}
-
 	}
 
 }
