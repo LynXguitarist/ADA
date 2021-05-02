@@ -5,19 +5,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Stack;
 
 public class Legionellosis {
 
-	private Map<Integer, Integer> walks;
-	private List<Integer>[] edges; // locations' connections
-	
-	private int[] locationsWeight; // array with weight of every location
+	private Map<Integer, Integer> walks; // Contains the interviews done to sick people
+	private List<Integer>[] edges; // Locations' connections
 
-	private int numberOfLocations; // saves the number of locations
-	private int biggestWeight; // saves the biggest weight recorded
+	private int[] locationsWeight; // Array with weight of every location
+
+	private int numberOfLocations; // Saves the number of locations
+	private int biggestWeight; // Saves the biggest weight recorded
 
 	public Legionellosis(int numberOfLocations) {
-		walks = new HashMap<>();
 		this.createDT(numberOfLocations);
 
 		this.locationsWeight = new int[numberOfLocations];
@@ -26,9 +27,18 @@ public class Legionellosis {
 		this.biggestWeight = 0;
 	}
 
+	/**
+	 * Initializes the map that contains the interviews
+	 * 
+	 * @param sickPeople
+	 */
+	public void updateSickPeople(int sickPeople) {
+		this.walks = new HashMap<>(sickPeople);
+	}
+
 	public void addEdge(int l1, int l2) {
-		edges[l1].add(l2);
-		edges[l2].add(l1);
+		edges[l1 - 1].add(l2 - 1);
+		edges[l2 - 1].add(l1 - 1);
 	}
 
 	/**
@@ -38,13 +48,14 @@ public class Legionellosis {
 	 * @param distance
 	 */
 	public void addMovement(int homeLocation, int distance) {
-		walks.put(homeLocation, distance);
+		walks.put(homeLocation - 1, distance);
 	}
 
 	public List<Integer> getPerilousLocations() {
-		// processes the movement done by sick people
-		processMovement();
-		
+		// Processes the movement done by sick people
+		for (Entry<Integer, Integer> entry : walks.entrySet())
+			processMovement(entry.getKey() - 1, entry.getValue());
+
 		List<Integer> locations = new LinkedList<>();
 
 		int size = 0;
@@ -54,23 +65,44 @@ public class Legionellosis {
 				size++;
 			}
 		}
-		
+
 		if (size == numberOfLocations) // If there is no perilous location, the line has
 			return new LinkedList<>();
 
 		return locations;
 	}
-	
-	//------------------------------------Private_Methods-------------------------------------//
 
-	private void processMovement() {
-		// Pesquisa por bfs, dfs ou outro
+	// ------------------------------------Private_Methods-------------------------------------//
 
-		// Por cada residente, adiciona 1 so uma vez a cada posicao
-		
-		// Provavelmente usar um depth-limit-search
+	private void processMovement(int source, int limit) {
+		// Stack that saves the locations visited
+		Stack<Integer> nodeStack = new Stack<>();
+
+		// Array that saves the distances to the source
+		int[] distances = new int[numberOfLocations];
+
+		// Current location
+		int current = source;
+		locationsWeight[current] += 1;
+
+		nodeStack.add(source);
+
+		while (!nodeStack.isEmpty()) {
+			current = nodeStack.pop();
+
+			if (distances[current] <= limit) {
+				for (int neighbor : this.edges[current]) {
+					if (distances[neighbor] == 0 && neighbor != source) {
+						distances[neighbor] = distances[current] + 1;
+						nodeStack.add(neighbor);
+
+						locationsWeight[neighbor] += 1;
+					}
+				}
+			}
+		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void createDT(int length) {
 		this.edges = new List[length];

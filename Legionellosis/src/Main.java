@@ -25,7 +25,10 @@ public class Main {
 			leg.addEdge(l1, l2);
 		}
 		int S = Integer.parseInt(in.readLine());
-
+		
+		// Updates the interviews done
+		leg.updateSickPeople(S);
+		
 		for (int i = 0; i < S; i++) {
 			String[] h_d = in.readLine().split(" ");
 			int h = Integer.parseInt(h_d[0]);
