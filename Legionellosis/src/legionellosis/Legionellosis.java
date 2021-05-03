@@ -55,7 +55,8 @@ public class Legionellosis {
 		// Processes the movement done by sick people
 		for (Entry<Integer, Integer> entry : walks.entrySet())
 			processMovement(entry.getKey() - 1, entry.getValue());
-
+		
+		// PerilousLocations
 		List<Integer> locations = new LinkedList<>();
 
 		int size = 0;
@@ -66,7 +67,7 @@ public class Legionellosis {
 			}
 		}
 
-		if (size == numberOfLocations) // If there is no perilous location, the line has
+		if (size == numberOfLocations) // If there is no perilous location
 			return new LinkedList<>();
 
 		return locations;
@@ -97,6 +98,9 @@ public class Legionellosis {
 						nodeStack.add(neighbor);
 
 						locationsWeight[neighbor] += 1;
+						// Updates biggest know numberOfCases in single location
+						if (locationsWeight[neighbor] > biggestWeight)
+							biggestWeight = locationsWeight[neighbor];
 					}
 				}
 			}
