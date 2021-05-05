@@ -1,11 +1,13 @@
 package legionellosis;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Stack;
 
 public class Legionellosis {
@@ -73,7 +75,7 @@ public class Legionellosis {
 
 	private void processMovement(int source, int limit) {
 		// Stack that saves the locations visited
-		Stack<Integer> nodeStack = new Stack<>();
+		Queue<Integer> nodeStack = new ArrayDeque<>();
 
 		// Array that saves the distances to the source
 		int[] distances = new int[numberOfLocations];
@@ -85,7 +87,7 @@ public class Legionellosis {
 		nodeStack.add(current);
 
 		while (!nodeStack.isEmpty()) {
-			current = nodeStack.pop();
+			current = nodeStack.poll();
 
 			if (distances[current] < limit) {
 
@@ -96,11 +98,6 @@ public class Legionellosis {
 						nodeStack.add(neighbor);
 
 						locationsWeight[neighbor] += 1;
-
-					} else if (distances[current] + 1 < distances[neighbor]) {
-						distances[neighbor] = distances[current] + 1;
-						
-						nodeStack.add(neighbor);
 					}
 				}
 			}
