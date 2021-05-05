@@ -10,13 +10,14 @@ import java.util.Stack;
 
 public class Legionellosis {
 
+	// se houver 2 pessoas da mesma localizacao, fazer Lista de Pair
 	private Map<Integer, Integer> walks; // Contains the interviews done to sick people
 	private List<Integer>[] edges; // Locations' connections
 
 	private int[] locationsWeight; // Array with weight of every location
 
 	private int numberOfLocations; // Saves the number of locations
-	private int sickPeople;
+	private int sickPeople; // number of sick people
 
 	public Legionellosis(int numberOfLocations) {
 		this.createDT(numberOfLocations);
