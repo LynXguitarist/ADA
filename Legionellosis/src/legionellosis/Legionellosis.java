@@ -16,7 +16,7 @@ public class Legionellosis {
 	private int[] locationsWeight; // Array with weight of every location
 
 	private int numberOfLocations; // Saves the number of locations
-	private int biggestWeight; // Saves the biggest weight recorded
+	private int sickPeople;
 
 	public Legionellosis(int numberOfLocations) {
 		this.createDT(numberOfLocations);
@@ -24,7 +24,7 @@ public class Legionellosis {
 		this.locationsWeight = new int[numberOfLocations];
 
 		this.numberOfLocations = numberOfLocations;
-		this.biggestWeight = 0;
+		this.sickPeople = 0;
 	}
 
 	/**
@@ -34,6 +34,7 @@ public class Legionellosis {
 	 */
 	public void updateSickPeople(int sickPeople) {
 		this.walks = new HashMap<>(sickPeople);
+		this.sickPeople = sickPeople;
 	}
 
 	public void addEdge(int l1, int l2) {
@@ -60,12 +61,9 @@ public class Legionellosis {
 		List<Integer> locations = new LinkedList<>();
 
 		for (int i = 0; i < numberOfLocations; i++) {
-			if (locationsWeight[i] == biggestWeight)
+			if (locationsWeight[i] == sickPeople)
 				locations.add(i + 1);
 		}
-
-		if (walks.size() != biggestWeight) // If there is no perilous location
-			return new LinkedList<>();
 
 		return locations;
 	}
@@ -98,12 +96,9 @@ public class Legionellosis {
 
 						locationsWeight[neighbor] += 1;
 
-						// Updates biggest know numberOfCases in single location
-						if (locationsWeight[neighbor] > biggestWeight)
-							biggestWeight = locationsWeight[neighbor];
-
 					} else if (distances[current] + 1 < distances[neighbor]) {
 						distances[neighbor] = distances[current] + 1;
+						
 						nodeStack.add(neighbor);
 					}
 				}
