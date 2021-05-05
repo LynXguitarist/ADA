@@ -54,20 +54,17 @@ public class Legionellosis {
 	public List<Integer> getPerilousLocations() {
 		// Processes the movement done by sick people
 		for (Entry<Integer, Integer> entry : walks.entrySet())
-			processMovement(entry.getKey() - 1, entry.getValue());
-		
+			processMovement(entry.getKey(), entry.getValue());
+
 		// PerilousLocations
 		List<Integer> locations = new LinkedList<>();
 
-		int size = 0;
 		for (int i = 0; i < numberOfLocations; i++) {
-			if (locationsWeight[i] == biggestWeight) {
+			if (locationsWeight[i] == biggestWeight)
 				locations.add(i + 1);
-				size++;
-			}
 		}
 
-		if (size == numberOfLocations) // If there is no perilous location
+		if (walks.size() != biggestWeight) // If there is no perilous location
 			return new LinkedList<>();
 
 		return locations;
@@ -86,21 +83,28 @@ public class Legionellosis {
 		int current = source;
 		locationsWeight[current] += 1;
 
-		nodeStack.add(source);
+		nodeStack.add(current);
 
 		while (!nodeStack.isEmpty()) {
 			current = nodeStack.pop();
 
-			if (distances[current] <= limit) {
+			if (distances[current] < limit) {
+
 				for (int neighbor : this.edges[current]) {
 					if (distances[neighbor] == 0 && neighbor != source) {
 						distances[neighbor] = distances[current] + 1;
+
 						nodeStack.add(neighbor);
 
 						locationsWeight[neighbor] += 1;
+
 						// Updates biggest know numberOfCases in single location
 						if (locationsWeight[neighbor] > biggestWeight)
 							biggestWeight = locationsWeight[neighbor];
+
+					} else if (distances[current] + 1 < distances[neighbor]) {
+						distances[neighbor] = distances[current] + 1;
+						nodeStack.add(neighbor);
 					}
 				}
 			}

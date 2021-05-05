@@ -25,21 +25,25 @@ public class Main {
 			leg.addEdge(l1, l2);
 		}
 		int S = Integer.parseInt(in.readLine());
-		
+
 		// Updates the interviews done
 		leg.updateSickPeople(S);
-		
+
 		for (int i = 0; i < S; i++) {
 			String[] h_d = in.readLine().split(" ");
 			int h = Integer.parseInt(h_d[0]);
 			int d = Integer.parseInt(h_d[1]);
-			
+
 			leg.addMovement(h, d);
 		}
-		
+
 		List<Integer> result = new ArrayList<>(leg.getPerilousLocations());
-		for(Integer r: result)
-			System.out.print(r);
+		if (result.isEmpty())
+			System.out.print("0");
+		
+		for (Integer r : result) {
+			System.out.print(r + " ");
+		}
 	}
 
 }
