@@ -40,9 +40,13 @@ public class Main {
 		List<Integer> result = new ArrayList<>(leg.getPerilousLocations());
 		if (result.isEmpty())
 			System.out.print("0");
-		
-		for (Integer r : result) {
-			System.out.print(r + " ");
+
+		int size = result.size();
+		for (int i = 0; i < size; i++) {
+			if (i == size - 1)
+				System.out.print(result.get(i));
+			else
+				System.out.print(result.get(i) + " ");
 		}
 	}
 
