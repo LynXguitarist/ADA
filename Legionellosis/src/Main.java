@@ -39,12 +39,12 @@ public class Main {
 
 		List<Integer> result = new ArrayList<>(leg.getPerilousLocations());
 		if (result.isEmpty())
-			System.out.print("0");
+			System.out.println("0");
 		else {
 			int size = result.size();
 			for (int i = 0; i < size; i++) {
 				if (i == size - 1)
-					System.out.print(String.valueOf(result.get(i)));
+					System.out.println(String.valueOf(result.get(i)));
 				else {
 					System.out.print(String.valueOf(result.get(i)));
 					System.out.print(" ");
