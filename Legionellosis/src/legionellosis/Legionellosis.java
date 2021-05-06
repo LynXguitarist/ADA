@@ -11,7 +11,6 @@ import java.util.Queue;
 
 public class Legionellosis {
 
-	// se houver 2 pessoas da mesma localizacao, fazer Lista de Pair
 	private Map<Integer, Integer> walks; // Contains the interviews done to sick people
 	private List<Integer>[] edges; // Locations' connections
 
@@ -39,6 +38,12 @@ public class Legionellosis {
 		this.sickPeople = sickPeople;
 	}
 
+	/**
+	 * Add connection between l1 and l2. Creates the graph
+	 * 
+	 * @param l1
+	 * @param l2
+	 */
 	public void addEdge(int l1, int l2) {
 		edges[l1 - 1].add(l2 - 1);
 		edges[l2 - 1].add(l1 - 1);
@@ -54,6 +59,11 @@ public class Legionellosis {
 		walks.put(homeLocation - 1, distance);
 	}
 
+	/**
+	 * Returns the list of perilous location
+	 * 
+	 * @return list periolousLocation
+	 */
 	public List<Integer> getPerilousLocations() {
 		// Processes the movement done by sick people
 		for (Entry<Integer, Integer> entry : walks.entrySet())
@@ -72,6 +82,12 @@ public class Legionellosis {
 
 	// ------------------------------------Private_Methods-------------------------------------//
 
+	/**
+	 * BFS algorithm, processes the movement done by sick people
+	 * 
+	 * @param source
+	 * @param limit
+	 */
 	private void processMovement(int source, int limit) {
 		// Stack that saves the locations visited
 		Queue<Integer> nodeStack = new ArrayDeque<>();

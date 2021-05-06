@@ -38,19 +38,22 @@ public class Main {
 		}
 
 		List<Integer> result = new ArrayList<>(leg.getPerilousLocations());
+		
+		// Returns 0 if there is no perilous location
 		if (result.isEmpty())
-			System.out.println("0");
+			System.out.println(0);
 		else {
 			int size = result.size();
 			for (int i = 0; i < size; i++) {
 				if (i == size - 1)
-					System.out.println(String.valueOf(result.get(i)));
+					System.out.println(result.get(i));
 				else {
-					System.out.print(String.valueOf(result.get(i)));
-					System.out.print(" ");
+					System.out.print(result.get(i) + " ");
 				}
 			}
 		}
+		
+		in.close();
 	}
 
 }
