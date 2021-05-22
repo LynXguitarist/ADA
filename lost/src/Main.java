@@ -17,15 +17,16 @@ public class Main {
 			int C = Integer.parseInt(R_C_M[1]);
 			int M = Integer.parseInt(R_C_M[2]);
 
-			Lost lost = new Lost(R, C, M);
 			// Populates the map
 			String[] map = new String[R];
 			for (int j = 0; j < R; j++) {
 				String line = in.readLine();
 				map[j] = line;
 			}
-			lost.processLine(map, C);
-
+			Lost lost = new Lost(R, C, M);
+			
+			lost.processMap(map, C);
+			
 			// Position of each Magical wheel
 			for (int j = 0; j < M; j++) {
 				String[] dst = in.readLine().split(" ");
@@ -54,9 +55,7 @@ public class Main {
 			else
 				System.out.println("John " + results[0]);
 
-			if (results[1] == Lost.LOST_IN_TIME)
-				System.out.println("Kate " + Lost.LOST_IN_TIME_S);
-			else if (results[1] == Lost.UNREACHABLE)
+			if (results[1] == Lost.UNREACHABLE)
 				System.out.println("Kate " + Lost.UNREACHABLE_S);
 			else
 				System.out.println("Kate " + results[1]);
