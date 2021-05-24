@@ -25,8 +25,6 @@ public class Main {
 			}
 			Lost lost = new Lost(R, C, M);
 			
-			lost.processMap(map, C);
-			
 			// Position of each Magical wheel
 			for (int j = 0; j < M; j++) {
 				String[] dst = in.readLine().split(" ");
@@ -36,6 +34,9 @@ public class Main {
 
 				lost.savesMagicalWheel(r, c, t);
 			}
+			// Process map
+			lost.processMap(map, C);
+			
 			// John's and Kate's position
 			String[] pos = in.readLine().split(" ");
 			int rJ = Integer.parseInt(pos[0]);
