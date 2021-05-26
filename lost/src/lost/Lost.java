@@ -14,7 +14,7 @@ public class Lost {
 
 	public static final int LOST_IN_TIME = Integer.MIN_VALUE;
 	public static final int UNREACHABLE = Integer.MAX_VALUE;
-	
+
 	public static final String LOST_IN_TIME_S = "Lost in Time";
 	public static final String UNREACHABLE_S = "Unreachable";
 
@@ -22,7 +22,7 @@ public class Lost {
 	private List<Edge> johnEdges;
 	private List<Edge> kateEdges;
 	private char[][] map;
-	private Map<Pair<Integer, Integer>, Integer> magicalWheels; // ED for MW
+	private Map<Integer, Integer> magicalWheels; // ED for MW -> numVertice - time
 
 	private int row, col;
 	private int numVertices;// number of vertices for Kate and John
@@ -34,9 +34,9 @@ public class Lost {
 
 		johnEdges = new ArrayList<>(row * col * 4);
 		kateEdges = new ArrayList<>(row * col * 4);
+		magicalWheels = new HashMap<>(numberMW);
 
 		map = new char[row][col];
-		magicalWheels = new HashMap<>(numberMW);
 
 		this.row = row;
 		this.col = col;
@@ -54,14 +54,16 @@ public class Lost {
 	public int[] processResult() {
 		int[] results = new int[2];
 
-		results[0] = bellmanFord(true);
-		results[1] = bellmanFord(false);
+		results[0] = bellmanFordJohn();
+		results[1] = bellmanFordKate();
 
 		return results;
 	}
 
 	public void savesMagicalWheel(int r, int c, int t) {
-		magicalWheels.put(Pair.of(r, c), t);
+		// add to magicalWheels
+		magicalWheels.put(numVertices, t);
+		// add to graph
 		graph.put(Pair.of(r, c), numVertices++);
 	}
 
@@ -93,20 +95,15 @@ public class Lost {
 
 	// Lost in time -> negative cycle
 	// Unreachable -> there is no connection to the exit
-	// Probably use BellmanFord
 
-	private int bellmanFord(boolean isJohn) {
+	private int bellmanFordJohn() {
 		int x = rJ;
 		int y = cJ;
-		if (!isJohn) {
-			x = rK;
-			y = cK;
-		}
 
 		int[] via = new int[numVertices];
 
 		int[] length = new int[numVertices];
-		for (int i = 0; i < row; i++)
+		for (int i = 0; i < numVertices; i++)
 			length[i] = Integer.MAX_VALUE;
 
 		int origin = graph.get(Pair.of(x, y));
@@ -115,45 +112,50 @@ public class Lost {
 		via[origin] = origin;
 
 		boolean changes = false;
-		for (int i = 1; i < row * col; i++) {
-			if (isJohn)
-				changes = updateLengthsJohn(length, via);
-			else
-				changes = updateLengthsKate(length, via);
+		for (int i = 1; i < numVertices; i++) {
+				changes = updateLengths(johnEdges, length, via);
 			if (!changes)
 				break;
 		}
 		// Negative-weight cycles
-		if (changes && isJohn && updateLengthsJohn(length, via)) {
-			return length[Integer.MIN_VALUE];
+		if (changes && updateLengths(johnEdges, length, via))
+			return Integer.MIN_VALUE;
+		
+		return length[graph.get(Pair.of(exit_x, exit_y))];
+	}
+	
+	private int bellmanFordKate() {
+		int x = rK;
+		int y = cK;
+
+		int[] via = new int[numVertices];
+
+		int[] length = new int[numVertices];
+		for (int i = 0; i < numVertices; i++)
+			length[i] = Integer.MAX_VALUE;
+
+		int origin = graph.get(Pair.of(x, y));
+
+		length[origin] = 0;
+		via[origin] = origin;
+
+		boolean changes = false;
+		for (int i = 1; i < numVertices; i++) {
+				changes = updateLengths(kateEdges, length, via);
+			if (!changes)
+				break;
 		}
+		
 		return length[graph.get(Pair.of(exit_x, exit_y))];
 	}
 
-	private boolean updateLengthsJohn(int[] len, int[] via) {
+	private boolean updateLengths(List<Edge>edges, int[] len, int[] via) {
 		boolean changes = false;
-		for (Edge edge : johnEdges) {
+		for (Edge edge : edges) {
 			int tail = edge.getV1();
 			int head = edge.getV2();
 			if (len[tail] < Integer.MAX_VALUE) {
-				int newLen = len[tail] + 0;
-				if (newLen < len[head]) {
-					len[head] = newLen;
-					via[head] = tail;
-					changes = true;
-				}
-			}
-		}
-		return changes;
-	}
-
-	private boolean updateLengthsKate(int[] len, int[] via) {
-		boolean changes = false;
-		for (Edge edge : kateEdges) {
-			int tail = edge.getV1();
-			int head = edge.getV2();
-			if (len[tail] < Integer.MAX_VALUE) {
-				int newLen = len[tail] + 0;
+				int newLen = len[tail] + edge.getWeight();
 				if (newLen < len[head]) {
 					len[head] = newLen;
 					via[head] = tail;
@@ -170,14 +172,16 @@ public class Lost {
 				char c = this.map[i][j];
 				// if not Obstacle, saves vertices
 				if (c != OBSTACLE) {
-					graph.put(Pair.of(i, j), numVertices);
+					boolean wasVertexAdd = false;
+					if (graph.putIfAbsent(Pair.of(i, j), numVertices) == null)
+						wasVertexAdd = true;
 					// Not WATER
 					if (c != WATER)
 						addEdgesJohn(i, j, c);
 
 					addEdgesKate(i, j, c);
-
-					numVertices++;
+					if(wasVertexAdd)
+						numVertices++;
 				}
 			}
 		}
@@ -190,7 +194,6 @@ public class Lost {
 			// GRASS or MW
 			if (previousChar != WATER && previousChar != OBSTACLE) {
 				johnEdges.add(new Edge(numVertices - 1, numVertices, getWeightByTile(previousChar, i, j)));
-				// other way edge???
 			}
 		}
 		// Add vertical edge
@@ -199,14 +202,13 @@ public class Lost {
 			if (upperChar != WATER && upperChar != OBSTACLE) {
 				int vertex = graph.get(Pair.of(i - 1, j));
 				johnEdges.add(new Edge(vertex, numVertices, getWeightByTile(upperChar, i, j)));
-				// other way edge???
 			}
 
 		}
 		// Is Magical Wheel, connects the position of the MW to the traveled position
-		if (c != GRASS) {
-			int vertex = c - 1; // position traveled using MW
-			johnEdges.add(new Edge(numVertices, vertex, magicalWheels.get(Pair.of(i, j))));
+		if (c != GRASS && c != EXIT) {
+			int vertex = (c - '0') - 1; // position traveled using MW
+			johnEdges.add(new Edge(numVertices, vertex, magicalWheels.get(vertex)));
 		}
 	}
 
@@ -217,7 +219,6 @@ public class Lost {
 			// GRASS or MW
 			if (previousChar != OBSTACLE) {
 				kateEdges.add(new Edge(numVertices - 1, numVertices, getWeightByTile(previousChar, i, j)));
-				// other way edge???
 			}
 		}
 		// Add vertical edge
@@ -226,7 +227,6 @@ public class Lost {
 			if (upperChar != OBSTACLE) {
 				int vertex = graph.get(Pair.of(i - 1, j));
 				kateEdges.add(new Edge(vertex, numVertices, getWeightByTile(upperChar, i, j)));
-				// other way edge???
 			}
 		}
 	}
@@ -240,7 +240,7 @@ public class Lost {
 		case WATER:
 			weight = 2;
 			break;
-		default: // is Magical Wheel
+		default: // is Magical Wheel or Exit
 			weight = 1;
 			break;
 		}

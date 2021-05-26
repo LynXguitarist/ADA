@@ -47,7 +47,7 @@ public class Main {
 			lost.J_K_Pos(rJ, cJ, rK, cK);
 			int[] results = lost.processResult();
 
-			System.out.println("Case #" + i + 1);
+			System.out.println("Case #" + (i + 1));
 
 			if (results[0] == Lost.LOST_IN_TIME)
 				System.out.println("John " + Lost.LOST_IN_TIME_S);
