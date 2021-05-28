@@ -1,9 +1,11 @@
 package lost;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 public class Lost {
 
@@ -22,7 +24,7 @@ public class Lost {
 	private List<Edge> johnEdges;
 	private List<Edge> kateEdges;
 	private char[][] map;
-	private Map<Integer, Integer> magicalWheels; // ED for MW -> numVertice - time
+	private Queue<Integer> magicalWheels; // ED for MW -> numVertice
 
 	private int row, col;
 	private int numVertices;// number of vertices for Kate and John
@@ -34,7 +36,7 @@ public class Lost {
 
 		johnEdges = new ArrayList<>(row * col * 4);
 		kateEdges = new ArrayList<>(row * col * 4);
-		magicalWheels = new HashMap<>(numberMW);
+		magicalWheels = new ArrayDeque<>(numberMW);
 
 		map = new char[row][col];
 
@@ -61,10 +63,10 @@ public class Lost {
 	}
 
 	public void savesMagicalWheel(int r, int c, int t) {
-		// add to magicalWheels
-		magicalWheels.put(numVertices, t);
-		// add to vertices
-		vertices.put(Pair.of(r, c), numVertices++);
+		int vertex = magicalWheels.poll(); // vertex of the MW
+		int jumpVertex = vertices.get(Pair.of(r, c)); // vertex of the jump
+		// creates an edge between the MW and the jump vertex
+		johnEdges.add(new Edge(vertex, jumpVertex, t));
 	}
 
 	public void processMap(String[] map, int col) {
@@ -92,7 +94,6 @@ public class Lost {
 	}
 
 	// ------------------------------Private_Methods---------------------------//
-
 
 	// Lost in time -> negative cycle
 	// Unreachable -> there is no connection to the exit
@@ -166,117 +167,115 @@ public class Lost {
 		}
 		return changes;
 	}
-	
+
 	// ----------------------------Process_vertices-------------------------------//
 
-		private void processVertices() {
-			for (int i = 0; i < this.row; i++) {
-				for (int j = 0; j < this.col; j++) {
-					char c = this.map[i][j];
-					// if not Obstacle, saves vertices
-					if (c != OBSTACLE) {
-						boolean wasVertexAdd = false;
+	private void processVertices() {
+		for (int i = 0; i < this.row; i++) {
+			for (int j = 0; j < this.col; j++) {
+				char c = this.map[i][j];
+				// if not Obstacle, saves vertices
+				if (c != OBSTACLE) {
+					boolean wasVertexAdd = false;
 
-						if (vertices.putIfAbsent(Pair.of(i, j), numVertices) == null)
-							wasVertexAdd = true;
-						// Not WATER
-						if (c != WATER)
-							addEdgesJohn(i, j, c);
+					if (vertices.putIfAbsent(Pair.of(i, j), numVertices) == null)
+						wasVertexAdd = true;
+					// Not WATER
+					if (c != WATER)
+						addEdgesJohn(i, j, c);
 
-						addEdgesKate(i, j, c);
-						if (wasVertexAdd)
-							numVertices++;
-					}
+					addEdgesKate(i, j, c);
+					if (wasVertexAdd)
+						numVertices++;
 				}
 			}
 		}
+	}
 
-		private void addEdgesJohn(int i, int j, char c) {
-			int currentVertex = vertices.get(Pair.of(i, j));
-			// Add horizontal edge
-			if (j > 0) { // can add edge with previous vertex
-				char previousChar = this.map[i][j - 1];
-				// GRASS or MW
-				if (previousChar != WATER && previousChar != OBSTACLE) {
-					int previousVertex = vertices.get(Pair.of(i, j - 1));
-					
-					if (previousChar != EXIT)
-						johnEdges.add(new Edge(previousVertex, currentVertex, getWeightByTile(previousChar)));
+	private void addEdgesJohn(int i, int j, char c) {
+		int currentVertex = vertices.get(Pair.of(i, j));
+		// Add horizontal edge
+		if (j > 0) { // can add edge with previous vertex
+			char previousChar = this.map[i][j - 1];
+			// GRASS or MW
+			if (previousChar != WATER && previousChar != OBSTACLE) {
+				int previousVertex = vertices.get(Pair.of(i, j - 1));
 
-					if (c != EXIT)
-						johnEdges.add(new Edge(currentVertex, previousVertex, getWeightByTile(c)));
-				}
+				if (previousChar != EXIT)
+					johnEdges.add(new Edge(previousVertex, currentVertex, getWeightByTile(previousChar)));
 
+				if (c != EXIT)
+					johnEdges.add(new Edge(currentVertex, previousVertex, getWeightByTile(c)));
 			}
-			// Add vertical edge
-			if (i > 0) { // can add edge with upper vertex
-				char upperChar = this.map[i - 1][j];
 
-				if (upperChar != WATER && upperChar != OBSTACLE) {
-					int upperVertex = vertices.get(Pair.of(i - 1, j));
-					
-					if (upperChar != EXIT)
-						johnEdges.add(new Edge(upperVertex, currentVertex, getWeightByTile(upperChar)));
+		}
+		// Add vertical edge
+		if (i > 0) { // can add edge with upper vertex
+			char upperChar = this.map[i - 1][j];
 
-					if (c != EXIT)
-						johnEdges.add(new Edge(currentVertex, upperVertex, getWeightByTile(c)));
-				}
+			if (upperChar != WATER && upperChar != OBSTACLE) {
+				int upperVertex = vertices.get(Pair.of(i - 1, j));
 
+				if (upperChar != EXIT)
+					johnEdges.add(new Edge(upperVertex, currentVertex, getWeightByTile(upperChar)));
+
+				if (c != EXIT)
+					johnEdges.add(new Edge(currentVertex, upperVertex, getWeightByTile(c)));
 			}
-			// Is Magical Wheel, connects the position of the MW to the traveled position
-			if (c != GRASS && c != EXIT) {
-				int vertex = (c - '0') - 1; // position traveled using MW
-				johnEdges.add(new Edge(currentVertex, vertex, magicalWheels.get(vertex)));
+
+		}
+		// Is Magical Wheel
+		if (c != GRASS && c != EXIT)
+			magicalWheels.add(numVertices);
+	}
+
+	private void addEdgesKate(int i, int j, char c) {
+		int currentVertex = vertices.get(Pair.of(i, j));
+		// Add horizontal edge
+		if (j > 0) { // can add edge with previous vertex
+			char previousChar = this.map[i][j - 1];
+
+			// GRASS or MW
+			if (previousChar != OBSTACLE) {
+				int previousVertex = vertices.get(Pair.of(i, j - 1));
+
+				if (previousChar != EXIT)
+					kateEdges.add(new Edge(previousVertex, currentVertex, getWeightByTile(previousChar)));
+
+				if (c != EXIT)
+					kateEdges.add(new Edge(currentVertex, previousVertex, getWeightByTile(c)));
 			}
 		}
+		// Add vertical edge
+		if (i > 0) { // can add edge with upper vertex
+			char upperChar = this.map[i - 1][j];
 
-		private void addEdgesKate(int i, int j, char c) {
-			int currentVertex = vertices.get(Pair.of(i, j));
-			// Add horizontal edge
-			if (j > 0) { // can add edge with previous vertex
-				char previousChar = this.map[i][j - 1];
-				
-				// GRASS or MW
-				if (previousChar != OBSTACLE) {
-					int previousVertex = vertices.get(Pair.of(i, j - 1));
-					
-					if (previousChar != EXIT)
-						kateEdges.add(new Edge(previousVertex, currentVertex, getWeightByTile(previousChar)));
+			if (upperChar != OBSTACLE) {
+				int upperVertex = vertices.get(Pair.of(i - 1, j));
 
-					if (c != EXIT)
-						kateEdges.add(new Edge(currentVertex, previousVertex, getWeightByTile(c)));
-				}
-			}
-			// Add vertical edge
-			if (i > 0) { // can add edge with upper vertex
-				char upperChar = this.map[i - 1][j];
-				
-				if (upperChar != OBSTACLE) {
-					int upperVertex = vertices.get(Pair.of(i - 1, j));
-					
-					if (upperChar != EXIT)
-						kateEdges.add(new Edge(upperVertex, currentVertex, getWeightByTile(upperChar)));
+				if (upperChar != EXIT)
+					kateEdges.add(new Edge(upperVertex, currentVertex, getWeightByTile(upperChar)));
 
-					if (c != EXIT)
-						kateEdges.add(new Edge(currentVertex, upperVertex, getWeightByTile(c)));
-				}
+				if (c != EXIT)
+					kateEdges.add(new Edge(currentVertex, upperVertex, getWeightByTile(c)));
 			}
 		}
+	}
 
-		private int getWeightByTile(char tile) {
-			int weight = 0;
-			switch (tile) {
-			case GRASS:
-				weight = 1;
-				break;
-			case WATER:
-				weight = 2;
-				break;
-			default: // is Magical Wheel or Exit
-				weight = 1;
-				break;
-			}
-			return weight;
+	private int getWeightByTile(char tile) {
+		int weight = 0;
+		switch (tile) {
+		case GRASS:
+			weight = 1;
+			break;
+		case WATER:
+			weight = 2;
+			break;
+		default: // is Magical Wheel or Exit
+			weight = 1;
+			break;
 		}
+		return weight;
+	}
 
 }
