@@ -34,7 +34,7 @@ public class Main {
 				int c = Integer.parseInt(dst[1]);
 				int t = Integer.parseInt(dst[2]);
 
-				lost.savesMagicalWheel(r, c, t);
+				lost.savesMagicalWheel(j, r, c, t);
 			}
 
 			// John's and Kate's position

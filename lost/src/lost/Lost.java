@@ -1,11 +1,9 @@
 package lost;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 public class Lost {
 
@@ -24,7 +22,7 @@ public class Lost {
 	private List<Edge> johnEdges;
 	private List<Edge> kateEdges;
 	private char[][] map;
-	private Queue<Integer> magicalWheels; // ED for MW -> numVertice
+	private Map<Integer, Integer> magicalWheels; // ED for MW -> (char, numVertice)
 
 	private int row, col;
 	private int numVertices;// number of vertices for Kate and John
@@ -36,7 +34,7 @@ public class Lost {
 
 		johnEdges = new ArrayList<>(row * col * 4);
 		kateEdges = new ArrayList<>(row * col * 4);
-		magicalWheels = new ArrayDeque<>(numberMW);
+		magicalWheels = new HashMap<>(numberMW);
 
 		map = new char[row][col];
 
@@ -62,8 +60,9 @@ public class Lost {
 		return results;
 	}
 
-	public void savesMagicalWheel(int r, int c, int t) {
-		int vertex = magicalWheels.poll(); // vertex of the MW
+	public void savesMagicalWheel(int index, int r, int c, int t) {
+		int vertex = magicalWheels.get(index); // vertex of the MW
+		
 		int jumpVertex = vertices.get(Pair.of(r, c)); // vertex of the jump
 		// creates an edge between the MW and the jump vertex
 		johnEdges.add(new Edge(vertex, jumpVertex, t));
@@ -225,8 +224,10 @@ public class Lost {
 
 		}
 		// Is Magical Wheel
-		if (c != GRASS && c != EXIT)
-			magicalWheels.add(numVertices);
+		if (c != GRASS && c != EXIT) {
+			int index = (c - '0') - 1;
+			magicalWheels.put(index, numVertices);
+		}
 	}
 
 	private void addEdgesKate(int i, int j, char c) {
