@@ -18,22 +18,23 @@ public class Lost {
 	public static final String LOST_IN_TIME_S = "Lost in Time";
 	public static final String UNREACHABLE_S = "Unreachable";
 
-	private Map<Pair<Integer, Integer>, Integer> vertices;
-	private List<Edge> johnEdges;
-	private List<Edge> kateEdges;
-	private char[][] map;
-	private Map<Integer, Integer> magicalWheels; // ED for MW -> (char, numVertice)
+	private Map<Pair<Integer, Integer>, Integer> vertices; // vertices of the graph
+	private List<Edge> johnEdges; // John's edges
+	private List<Edge> kateEdges; // Kate's edges
+	private char[][] map; // island
+	private Map<Integer, Integer> magicalWheels; // ED for MW -> (char ref, numVertice)
 
-	private int row, col;
+	private int row, col; // size of the island
 	private int numVertices;// number of vertices for Kate and John
-	private int rJ, cJ, rK, cK;
-	private int exit_x, exit_y;
+	private int rJ, cJ, rK, cK; // coordinates where John and Kate start
+	private int exit_x, exit_y; // coordinates of the exit
 
 	public Lost(int row, int col, int numberMW) {
 		vertices = new HashMap<>(row * col);
 
 		johnEdges = new ArrayList<>(row * col * 4);
 		kateEdges = new ArrayList<>(row * col * 4);
+
 		magicalWheels = new HashMap<>(numberMW);
 
 		map = new char[row][col];
@@ -51,6 +52,11 @@ public class Lost {
 		this.cK = 0;
 	}
 
+	/**
+	 * Processes the algorithm for John and Kate
+	 * 
+	 * @return results
+	 */
 	public int[] processResult() {
 		int[] results = new int[2];
 
@@ -60,14 +66,28 @@ public class Lost {
 		return results;
 	}
 
+	/**
+	 * Saves a magical wheel
+	 * 
+	 * @param index
+	 * @param r
+	 * @param c
+	 * @param t
+	 */
 	public void savesMagicalWheel(int index, int r, int c, int t) {
 		int vertex = magicalWheels.get(index); // vertex of the MW
-		
+
 		int jumpVertex = vertices.get(Pair.of(r, c)); // vertex of the jump
 		// creates an edge between the MW and the jump vertex
 		johnEdges.add(new Edge(vertex, jumpVertex, t));
 	}
 
+	/**
+	 * Processes the graph, using the island(matrix of chars)
+	 * 
+	 * @param map
+	 * @param col
+	 */
 	public void processMap(String[] map, int col) {
 		int row = 0;
 		for (String line : map) {
@@ -85,6 +105,14 @@ public class Lost {
 		processVertices();
 	}
 
+	/**
+	 * Saves positions of John and Kate
+	 * 
+	 * @param rJ
+	 * @param cJ
+	 * @param rK
+	 * @param cK
+	 */
 	public void J_K_Pos(int rJ, int cJ, int rK, int cK) {
 		this.rJ = rJ;
 		this.cJ = cJ;
@@ -94,9 +122,11 @@ public class Lost {
 
 	// ------------------------------Private_Methods---------------------------//
 
-	// Lost in time -> negative cycle
-	// Unreachable -> there is no connection to the exit
-
+	/**
+	 * Runs the bellmanFord algorithm for John
+	 * 
+	 * @return shortest path(time)
+	 */
 	private int bellmanFordJohn() {
 		int x = rJ;
 		int y = cJ;
@@ -125,6 +155,11 @@ public class Lost {
 		return length[vertices.get(Pair.of(exit_x, exit_y))];
 	}
 
+	/**
+	 * Runs the bellmanFord algorithm for Kate
+	 * 
+	 * @return shortest path(time)
+	 */
 	private int bellmanFordKate() {
 		int x = rK;
 		int y = cK;
@@ -169,6 +204,10 @@ public class Lost {
 
 	// ----------------------------Process_vertices-------------------------------//
 
+	/**
+	 * Processes the island(matrix of chars) and creates the vertices of the graph
+	 * and the edges
+	 */
 	private void processVertices() {
 		for (int i = 0; i < this.row; i++) {
 			for (int j = 0; j < this.col; j++) {
@@ -191,6 +230,13 @@ public class Lost {
 		}
 	}
 
+	/**
+	 * Adds John's edges
+	 * 
+	 * @param i
+	 * @param j
+	 * @param c
+	 */
 	private void addEdgesJohn(int i, int j, char c) {
 		int currentVertex = vertices.get(Pair.of(i, j));
 		// Add horizontal edge
@@ -230,6 +276,13 @@ public class Lost {
 		}
 	}
 
+	/**
+	 * Adds Kate's edges
+	 * 
+	 * @param i
+	 * @param j
+	 * @param c
+	 */
 	private void addEdgesKate(int i, int j, char c) {
 		int currentVertex = vertices.get(Pair.of(i, j));
 		// Add horizontal edge
@@ -263,6 +316,12 @@ public class Lost {
 		}
 	}
 
+	/**
+	 * returns the weight of leaving a tile
+	 * 
+	 * @param tile
+	 * @return weight
+	 */
 	private int getWeightByTile(char tile) {
 		int weight = 0;
 		switch (tile) {
